@@ -8,7 +8,7 @@ from synth import synthDataGen
 from standardize import standardize
 import time
 
-# METHOD = 'prob'
+#METHOD = 'prob'
 METHOD = 'rcot'
 # METHOD = 'fcit'
 POWER = 1
@@ -22,26 +22,26 @@ vars = dat.keys()
 for var in vars:
     dat[var] = standardize(dat[var])
 #print('dat = ', dat)
-ps = Prob.ProbSpace(dat, power = POWER)
+ps = Prob.ProbSpace(dat, power=POWER)
 
 # List a variety of independent relationships
 indeps = [('L1', 'L2'),
-            ('L2', 'L3'),
-            ('L1', 'L3'),
-            ('E1', 'E2'),
-            ('N1', 'N2'),
-            ('L4', 'L5'),
-            ('L5', 'L6'),
-            ('L4', 'N3'),
-            ('B', 'D', ['A']),
-            ('A', 'C', ['B', 'D']),
-            ('C', 'E2'),
-            ('L6', 'L7', ['L3']),
-            ('L4', 'L6', ['L3']),
-            ('L8', 'L9', ['L1']),
-            ('M1', 'E2'),
-            ('M1', 'E2'),
-            ]
+          ('L2', 'L3'),
+          ('L1', 'L3'),
+          ('E1', 'E2'),
+          ('N1', 'N2'),
+          ('L4', 'L5'),
+          ('L5', 'L6'),
+          ('L4', 'N3'),
+          ('B', 'D', ['A']),
+          ('A', 'C', ['B', 'D']),
+          ('C', 'E2'),
+          ('L6', 'L7', ['L3']),
+          ('L4', 'L6', ['L3']),
+          ('L8', 'L9', ['L1']),
+          ('M1', 'E2'),
+          ('M1', 'E2'),
+          ]
 
 # List a varieety of dependent relationships
 deps = [('L3', 'L4'),
@@ -88,7 +88,7 @@ for ind in indeps:
     #xD = [dat[x]]
     #yD = [dat[y]]
     #zD = [dat[zvar] for zvar in z]
-    pval = independence.test(ps, [x], [y], z, method = METHOD, power = POWER)
+    pval = independence.test(ps, [x], [y], z, method=METHOD, power=POWER)
     #pval = ps.independence(x, y, z)
     if pval < minIndep:
         minIndep = pval
@@ -108,7 +108,7 @@ for dep in deps:
     #xD = [dat[x]]
     #yD = [dat[y]]
     #zD = [dat[zvar] for zvar in z]
-    pval = independence.test(ps, [x], [y], z, method = METHOD, power = POWER)
+    pval = independence.test(ps, [x], [y], z, method=METHOD, power=POWER)
     #pval = ps.independence(x, y, z)
     if pval > maxDep:
         maxDep = pval
@@ -118,10 +118,11 @@ for dep in deps:
 print()
 
 print('Maximum dependence for expected independents = ', 1-minIndep)
-print('Minimum dependence for expected dependents =', 1- maxDep)
+print('Minimum dependence for expected dependents =', 1 - maxDep)
 print('Margin = ', minIndep - maxDep, '.  Positive margin is good.')
 print('Maximum dependence = ', 1-minDep)
-print('best Low threshold is: ', max([((1-minIndep) + (1- maxDep)) / 2.0, 1-minIndep + .001]))
+print('best Low threshold is: ', max(
+    [((1-minIndep) + (1 - maxDep)) / 2.0, 1-minIndep + .001]))
 print('best High threshold is: ', 1 - minDep + .1)
 print()
 end = time.time()

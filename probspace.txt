@@ -1,0 +1,51 @@
+power =  1
+getData:  1000 records read.
+Testing:  Probability/Test/models/indCalibrationDat.csv
+
+Testing expected independents:
+dependence ('L1', 'L2') =  0.03239552842801041
+dependence ('L2', 'L3') =  0.0
+dependence ('L1', 'L3') =  0.0
+dependence ('E1', 'E2') =  0.0
+dependence ('N1', 'N2') =  0.0
+dependence ('L4', 'L5') =  0.0
+dependence ('L5', 'L6') =  0.0
+dependence ('L4', 'N3') =  0.10279967523472355
+dependence ('B', 'D', ['A']) =  0.751541717249898
+dependence ('A', 'C', ['B', 'D']) =  0.9224839507098069
+dependence ('C', 'E2') =  0.0
+dependence ('L6', 'L7', ['L3']) =  0.8630361173055581
+dependence ('L4', 'L6', ['L3']) =  0.35321732436616715
+dependence ('L8', 'L9', ['L1']) =  0.02458153878888858
+dependence ('M1', 'E2') =  0.0
+dependence ('M1', 'E2') =  0.0
+
+Testing expected dependents:
+
+dependence ('L3', 'L4')  =  0.8716044934884216
+dependence ('L5', 'L2')  =  0.999999999996306
+dependence ('L6', 'L3')  =  0.9999995119906328
+dependence ('L6', 'L7')  =  0.9999766207320531
+dependence ('L7', 'L4')  =  0.9426293842456488
+dependence ('E3', 'E1')  =  0.9997686268548373
+dependence ('E3', 'E2')  =  0.7083219382646798
+dependence ('M1', 'N2')  =  0.9357590860229551
+dependence ('B', 'D')  =  0.9995658825971379
+dependence ('B', 'D', 'C')  =  0.823660826907325
+dependence ('B', 'D', ['A', 'C'])  =  0.5427091803861863
+dependence ('B', 'A', 'C')  =  0.9305362949868514
+dependence ('B', 'A', ['C', 'D'])  =  0.7112446312236589
+dependence ('B', 'C', 'A')  =  0.6990992566199767
+dependence ('A', 'C', 'B')  =  0.9917790905729501
+dependence ('L8', 'L9')  =  0.6316727325763075
+dependence ('N1', 'N2', ['N3'])  =  0.4083278651844491
+dependence ('N3', 'E1', ['M1'])  =  0.4832323669013292
+
+Maximum dependence for expected independents =  0.9224839507098069
+Minimum dependence for expected dependents = 0.4083278651844491
+Margin =  -0.5141560855253579 .  Positive margin is good.
+Maximum dependence =  0.999999999996306
+best Low threshold is:  0.9234839507098069
+best High threshold is:  1.099999999996306
+
+Test Time =  3

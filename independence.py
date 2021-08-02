@@ -12,6 +12,8 @@ from standardize import standardize
 # X and Y are Dependent given Z.  P-values less than
 # .05 provide a 95% confidence that the variables are dependent.
 # P-values > .05 imply independence (i.e. lack of proof of dependence).
+
+
 def testFCIT(ps, x, y, z=[]):
     import numpy as np
     from fcit import fcit
@@ -27,10 +29,11 @@ def testFCIT(ps, x, y, z=[]):
     if Z:
         Za = np.array(Z).transpose()
         #print('zshape = ', Za.shape)
-        pval = fcit.test(Xa, Ya, Za, num_perm = 10, prop_test = .40)
+        pval = fcit.test(Xa, Ya, Za, num_perm=10, prop_test=.40)
     else:
-        pval = fcit.test(Xa, Ya, num_perm = 10, prop_test = .40)
+        pval = fcit.test(Xa, Ya, num_perm=10, prop_test=.40)
     return pval
+
 
 def testSDCIT(ps, x, y, z=[]):
     import numpy as np
@@ -52,6 +55,7 @@ def testSDCIT(ps, x, y, z=[]):
     #print('p = ', p_value)
     return p_value
 
+
 def testProb(ps, X, Y, Z=[], power=2):
     X = X[0]
     Y = Y[0]
@@ -59,7 +63,8 @@ def testProb(ps, X, Y, Z=[], power=2):
     ind = ps.independence(X, Y, Z, power=power)
     return ind
 
-def testRCOT(ps, x, y, Z=[]):
+
+def testRCOT(ps, x, y, Z=[], num_f=25, num_f2=5):
     import numpy as np
     from RCoT.RCoT import RCOT
     X = [ps.ds[x[0]]]
@@ -67,12 +72,13 @@ def testRCOT(ps, x, y, Z=[]):
     if(not((Z == None) or (len(Z) == 0))):
         Z = [ps.ds[Z[i]] for i in range(len(Z))]
     # print('ps, X, Y, Z = ', ps, X, Y, Z)
-    rs = RCOT(X,Y,Z)
-    (Cxy_z, Sta,p) = rs.independence(X,Y,Z)
-    print("p: ",p)
+    rs = RCOT(X, Y, Z)
+    (Cxy_z, Sta, p) = rs.independence(X, Y, Z, num_f, num_f2)
+    #print("p: ", p)
     # if(p != 0):
     #     p = 1 - (-1*np.log10(p))/18
     return p
+
 
 def test(ps, X, Y, Z=[], method=None, power=1):
     # Valid values for method are: None(default), 'prob', 'fcit', 'sdcit'
@@ -83,9 +89,9 @@ def test(ps, X, Y, Z=[], method=None, power=1):
     elif method == 'sdcit':
         p_val = testSDCIT(ps, X, Y, Z)
     elif method == 'prob':
-        p_val = testProb(ps, X, Y, Z, power = power)
+        p_val = testProb(ps, X, Y, Z, power=power)
     elif method == 'rcot':
-        p_val = testRCOT(ps,X,Y,Z)
+        p_val = testRCOT(ps, X, Y, Z, 25, 5)
     else:
         print('independence.test:  method = ', method, 'is not supported.')
     return p_val

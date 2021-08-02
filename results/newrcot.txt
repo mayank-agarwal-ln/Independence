@@ -1,0 +1,1 @@
+python newTest.py > results/newrcot.txt
