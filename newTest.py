@@ -76,57 +76,66 @@ minDep = 9999999.0
 cumIndep = 0.0
 cumDep = 0.0
 
-# TODO: Num_f2 not working for >6 check for 15,16 ...
-# TODO: Tune these parameters(num_f,num_f2,r) for optimum value
+# TODO: Num_f2 not working for >6 
+# TODO: Reuslts
 # TODO: Wedenesday cTest.py
+# TODO: Reduce time
 
-ind_d = {}
-dep_d = {}
-for i in range(50):
-    for ind in indeps:
-        if len(ind) == 2:
-            x, y = ind
-            z = []
-        elif len(ind) == 3:
-            x, y, z = ind
-        else:
-            print('*** Error, improperly specified independence =', ind)
-        pval = independence.test(ps, [x], [y], z, method=METHOD, power=POWER)
-        if pval < minIndep:
-            minIndep = pval
-        key = str(ind)
-        if(key in ind_d):
-            ind_d[key].append(pval)
-        else:
-            ind_d[key] = [pval]
-    for dep in deps:
-        if len(dep) == 2:
-            x, y = dep
-            z = []
-        elif len(dep) == 3:
-            x, y, z = dep
-        else:
-            print('*** Error, improperly specified independence =', dep)
-        pval = independence.test(ps, [x], [y], z, method=METHOD, power=POWER)
-        if pval > maxDep:
-            maxDep = pval
-        if pval < minDep:
-            minDep = pval
-        key = str(dep)
-        if(key in dep_d):
-            dep_d[key].append(pval)
-        else:
-            dep_d[key] = [pval]
+numfs = [15,17,20,22,25,28,30,32,35]
+numf2s = [2,3,5,6]
+rs = [500,600,750, 800,950]
 
 
-print("independents")
-for i in ind_d.keys():
-    print(i, str(sum(ind_d[i])/(len(ind_d[i]))))
-
-
-print("dependents")
-for i in dep_d.keys():
-    print(i, str(sum(dep_d[i])/(len(dep_d[i]))))
+for num_f in numfs:
+    for num_f2 in numf2s:
+        for r in rs:
+            ind_d = {}
+            dep_d = {}
+            for i in range(50):
+                for ind in indeps:
+                    if len(ind) == 2:
+                        x, y = ind
+                        z = []
+                    elif len(ind) == 3:
+                        x, y, z = ind
+                    else:
+                        print('*** Error, improperly specified independence =', ind)
+                    pval = independence.test(ps, [x], [y], z, METHOD, POWER,num_f,num_f2,r)
+                    if pval < minIndep:
+                        minIndep = pval
+                    key = str(ind)
+                    if(key in ind_d):
+                        ind_d[key].append(pval)
+                    else:
+                        ind_d[key] = [pval]
+                for dep in deps:
+                    if len(dep) == 2:
+                        x, y = dep
+                        z = []
+                    elif len(dep) == 3:
+                        x, y, z = dep
+                    else:
+                        print('*** Error, improperly specified independence =', dep)
+                    pval = independence.test(ps, [x], [y], z, METHOD, POWER,num_f,num_f2,r)
+                    if pval > maxDep:
+                        maxDep = pval
+                    if pval < minDep:
+                        minDep = pval
+                    key = str(dep)
+                    if(key in dep_d):
+                        dep_d[key].append(pval)
+                    else:
+                        dep_d[key] = [pval]
+            print("num_f: ",num_f," num_f2: ",num_f2," r: ",r)
+            print()
+            print("Independents")
+            for i in ind_d.keys():
+                print(i, str(sum(ind_d[i])/(len(ind_d[i]))))
+            print()
+            print("Dependents")
+            for i in dep_d.keys():
+                print(i, str(sum(dep_d[i])/(len(dep_d[i]))))
+            print("--------------------------------------------------------------------------")
 
 # print('Maximum dependence for expected independents = ', 1-minIndep)
 # print('Minimum dependence for expected dependents =', 1 - maxDep)

@@ -1,0 +1,9 @@
+power =  1
+getData:  1000 records read.
+Testing:  Probability/Test/models/indCalibrationDat.csv
+
+Testing expected independents:
+Import time:  0.49520373344421387
+dependence ('L1', 'L2') =  [0.35077823]
+dependence ('L2', 'L3') =  [0.31926111]
+dependence ('L1', 'L3') =  [0.22442988]

@@ -8,6 +8,7 @@ from synth import synthDataGen
 from standardize import standardize
 import time
 
+
 #METHOD = 'prob'
 METHOD = 'rcot'
 # METHOD = 'fcit'
@@ -43,7 +44,7 @@ indeps = [('L1', 'L2'),
           ('M1', 'E2'),
           ]
 
-# List a varieety of dependent relationships
+# List a variety of dependent relationships
 deps = [('L3', 'L4'),
         ('L5', 'L2'),
         ('L6', 'L3'),
@@ -70,6 +71,11 @@ testVal = 0
 condTestVal = 0
 delta = .1
 
+num_f = 25
+num_f2 =5
+r = 500
+
+
 minIndep = 999999.0
 maxDep = 0.0
 minDep = 9999999.0
@@ -85,11 +91,7 @@ for ind in indeps:
         x, y, z = ind
     else:
         print('*** Error, improperly specified independence =', ind)
-    #xD = [dat[x]]
-    #yD = [dat[y]]
-    #zD = [dat[zvar] for zvar in z]
-    pval = independence.test(ps, [x], [y], z, method=METHOD, power=POWER)
-    #pval = ps.independence(x, y, z)
+    pval = independence.test(ps, [x], [y], z, METHOD, POWER,num_f,num_f2,r)
     if pval < minIndep:
         minIndep = pval
     print('dependence', ind, '= ', 1-pval)
@@ -105,11 +107,9 @@ for dep in deps:
         x, y, z = dep
     else:
         print('*** Error, improperly specified independence =', dep)
-    #xD = [dat[x]]
-    #yD = [dat[y]]
-    #zD = [dat[zvar] for zvar in z]
-    pval = independence.test(ps, [x], [y], z, method=METHOD, power=POWER)
-    #pval = ps.independence(x, y, z)
+    pval = independence.test(ps, [x], [y], z, METHOD, POWER,num_f,num_f2,r)
+
+    # FIXME: independence value taken here not dependence
     if pval > maxDep:
         maxDep = pval
     if pval < minDep:

@@ -64,23 +64,19 @@ def testProb(ps, X, Y, Z=[], power=2):
     return ind
 
 
-def testRCOT(ps, x, y, Z=[], num_f=25, num_f2=5):
+def testRCOT(ps, x, y, Z=[], num_f=25, num_f2=5,r=500):
     import numpy as np
     from RCoT.RCoT import RCOT
     X = [ps.ds[x[0]]]
     Y = [ps.ds[y[0]]]
     if(not((Z == None) or (len(Z) == 0))):
         Z = [ps.ds[Z[i]] for i in range(len(Z))]
-    # print('ps, X, Y, Z = ', ps, X, Y, Z)
     rs = RCOT(X, Y, Z)
-    (Cxy_z, Sta, p) = rs.independence(X, Y, Z, num_f, num_f2)
-    #print("p: ", p)
-    # if(p != 0):
-    #     p = 1 - (-1*np.log10(p))/18
+    p = rs.independence(X, Y, Z, num_f, num_f2,r)
     return p
 
 
-def test(ps, X, Y, Z=[], method=None, power=1):
+def test(ps, X, Y, Z=[], method=None, power=1, num_f=25,num_f2=5,r =500):
     # Valid values for method are: None(default), 'prob', 'fcit', 'sdcit'
     if method is None:
         method = 'prob'
@@ -91,7 +87,7 @@ def test(ps, X, Y, Z=[], method=None, power=1):
     elif method == 'prob':
         p_val = testProb(ps, X, Y, Z, power=power)
     elif method == 'rcot':
-        p_val = testRCOT(ps, X, Y, Z, 25, 5)
+        p_val = testRCOT(ps, X, Y, Z, num_f,num_f2,r)
     else:
         print('independence.test:  method = ', method, 'is not supported.')
     return p_val

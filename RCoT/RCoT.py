@@ -1,12 +1,13 @@
-#TODO: which cholesky works better?
+# TODO: which cholesky works better?
 # from scipy.linalg.basic import solve_triangular
 # from scipy.linalg.decomp_cholesky import cholesky
-from scipy.stats import norm
-import numpy.random as npr
+import time
+from RCoT.lpb4 import lpb4
 import numpy as np
-from pandas import read_csv
-from lpb4 import lpb4
-from scipy.linalg import cholesky,solve_triangular
+import numpy.random as npr
+from scipy.stats import norm
+from scipy.linalg import cholesky, solve_triangular
+from scipy.spatial import distance_matrix
 
 # ' RCoT - tests whether x and y are conditionally independent given z. Calls RIT if z is empty.
 # ' @param x Random variable x.
@@ -30,47 +31,46 @@ from scipy.linalg import cholesky,solve_triangular
 
 
 class RCOT:
-    def __init__(self,x,y,z=None,num_f=25,num_f2=5):
+    def __init__(self, x=None, y=None, z=None, num_f=25, num_f2=5):
         self.x = x
         self.y = y
         self.z = z
         self.approx = "lpd4"
         self.num_f = num_f
         self.num_f2 = num_f2
+        self.alpha = 0.05
 
-    def matrix2(self,mat):
+    def matrix2(self, mat):
         if(mat.shape[0] == 1):
             return mat.T
         return mat
 
-    def dist(self,mat):
-        ans = []
-        for i in range(mat.shape[0]):
-            for j in range(i+1, mat.shape[0]):
-                ans.append(np.linalg.norm(mat[i, :] - mat[j, :]))
-        return np.array(ans)
+    def dist(self, mat):
+        diststart= time.time()
+        dist = distance_matrix(mat,mat)
+        dist = dist[np.tril_indices(dist .shape[0],-1)]
+        return np.array(dist)
 
-    
-    def expandgrid(self,*itrs):
+    def expandgrid(self, *itrs):
         from itertools import product
         product = list(product(*itrs))
-        return {'Var{}'.format(i+1):[x[i] for x in product] for i in range(len(itrs))}
+        return {'Var{}'.format(i+1): [x[i] for x in product] for i in range(len(itrs))}
 
-    def normalize(self,x):
+    def normalize(self, x):
         if(x.std(ddof=1) > 0):
             return ((x-x.mean())/x.std(ddof=1))
         else:
             return (x-x.mean())
 
-
-    def normalizeMat(self,mat):
+    def normalizeMat(self, mat):
         # if the number of rows is zero
         if(mat.shape[0] == 0):
             mat = mat.T
         mat = np.apply_along_axis(self.normalize, 0, mat)
         return mat
 
-    def random_fourier_features(self,x, w=None, b=None, num_f=None, sigma=None, seed=None):
+    def random_fourier_features(self, x, w=None, b=None, num_f=None, sigma=None, seed=None):
+        featstart = time.time()
         if (num_f is None):
             num_f = 25
 
@@ -95,8 +95,8 @@ class RCOT:
             # mat1 = mat1.reshape(num_f,c,order='F')
             # w = (1/sigma)*mat1
             w = (1/sigma)*norm.rvs(size=(num_f*c))
-            w = w.reshape(num_f,c,order='F')
-            
+            w = w.reshape(num_f, c, order='F')
+
             # set the seed to seed
             if(seed is not None):
                 npr.seed(seed)
@@ -107,78 +107,80 @@ class RCOT:
             # b = np.repeat(2*np.pi*mat2[:,np.newaxis],r,axis=1)
             # b = repmat(2*np.pi*mat2, 1, r)
             b = npr.uniform(size=num_f)
-            b = np.repeat(2*np.pi*b[:,np.newaxis],r,axis=1)
-            
+            b = np.repeat(2*np.pi*b[:, np.newaxis], r, axis=1)
+        
         feat = np.sqrt(2)*((np.cos(w[:num_f, :c] @ x.T + b[:num_f, :])).T)
-
         return (feat, w, b)
 
-    def colMeans(self,vec):
+    def colMeans(self, vec):
         vec = np.array(vec)
         return np.mean(vec, axis=0)
 
-    def RIT(self,x,y,num_f2=5,seed=None):
-
-        x = np.matrix(x).T    
+    def RIT(self, x, y, num_f2=5, seed=None,r=500):
+        x = np.matrix(x).T
         y = np.matrix(y).T
 
         if(np.std(x) == 0 or np.std(y) == 0):
             return 1   # this is P value
-        
+
         x = self.matrix2(x)
         y = self.matrix2(y)
 
         r = x.shape[0]
-        if(r>500):
+        if(r > 500):
             r1 = 500
         else:
             r1 = r
 
         x = self.normalizeMat(x).T
         y = self.normalizeMat(y).T
-
-        (four_x, w, b) = self.random_fourier_features(x,num_f=num_f2,sigma=np.median(self.dist(x[:r1, ])), seed = seed )
-        (four_y, w, b) = self.random_fourier_features(y,num_f=num_f2,sigma=np.median(self.dist(y[:r1, ])), seed = seed )
-
+        (four_x, w, b) = self.random_fourier_features(
+            x, num_f=num_f2, sigma=np.median(self.dist(x[:r1, ])), seed=seed)
+        (four_y, w, b) = self.random_fourier_features(
+            y, num_f=num_f2, sigma=np.median(self.dist(y[:r1, ])), seed=seed)
         f_x = self.normalizeMat(four_x)
         f_y = self.normalizeMat(four_y)
+
 
         Cxy = np.cov(f_x, f_y, rowvar=False)
         Cxy = Cxy[:num_f2, num_f2:]  # num_f2,num_f2
         Cxy = np.round(Cxy, decimals=7)
         Sta = r*np.sum(Cxy**2)
 
-        res_x = f_x - np.repeat(np.matrix(self.colMeans(f_x))[:,np.newaxis],r,axis=1)
-        res_y = f_y - np.repeat(np.matrix(self.colMeans(f_x))[:,np.newaxis],r,axis=1)
+        res_x = f_x - np.repeat(np.matrix(self.colMeans(f_x))
+                                [:, np.newaxis], r, axis=1)
+        res_y = f_y - np.repeat(np.matrix(self.colMeans(f_x))
+                                [:, np.newaxis], r, axis=1)
 
-        d = self.expandgrid(np.arange(0,f_x.shape[1]), np.arange(0,f_y.shape[1]))
-        res = np.array(res_x[:,np.array(d['Var1'])]) * np.array(res_y[:,np.array(d['Var2'])])
+        start1 = time.time()
+        d = self.expandgrid(
+            np.arange(0, f_x.shape[1]), np.arange(0, f_y.shape[1]))
+        res = np.array(res_x[:, np.array(d['Var1'])]) * \
+            np.array(res_y[:, np.array(d['Var2'])])
         res = np.matrix(res)
         Cov = 1/r * ((res.T) @ res)
-        w,v = np.linalg.eig(Cov)
-        w = [i for i in w if i>0]
+        w, v = np.linalg.eig(Cov)
+        w = [i for i in w if i > 0]
         if(self.approx == "lpd4"):
-            
+
             w1 = w
             p = 1 - lpb4(np.array(w1), Sta)
-            if(p==None or np.isnan(p)):
-                from hbe import hbe
+            if(p == None or np.isnan(p)):
+                from RCoT.hbe import hbe
                 p = 1 - hbe(w1, Sta)
 
         return (p, Sta)
 
-    def independence(self, x, y, z=None, num_f=25, num_f2=5, seed=None):
-
-        x = np.matrix(x).T    
+    def rcot(self, x, y, z=None, num_f=25, num_f2=5, seed=None,r=500):
+        start = time.time()
+        x = np.matrix(x).T
         y = np.matrix(y).T
-
         # Unconditional Testing
-        if(len(z) == 0 or z==None):
-            (p,Sta) = self.RIT(x,y,num_f2,seed)
+        if(len(z) == 0 or z == None):
+            (p, Sta) = self.RIT(x, y, num_f2, seed,r)
             return (None, Sta, p)
-
-        z = np.matrix(z).T 
-
+        
+        z = np.matrix(z).T
         x = self.matrix2(x)
         y = self.matrix2(y)
         z = self.matrix2(z)
@@ -194,37 +196,36 @@ class RCOT:
             if(z[:, i].std() > 0):
                 z1.append(z[:, i])
 
-        z = z1[0]
-
+        #z = z1[0]
         z = self.matrix2(z)
         try:
             d = z.shape[1]    # D => dimension of variable
         except:
             d = 1
         # Unconditional Testing
-        if(len(z) == 0 or z.any()==None):
-            (p,Sta) = self.RIT(x,y,num_f2,seed)
+        if(len(z) == 0 or z.any() == None):
+            (p, Sta) = self.RIT(x, y, num_f2, seed,r)
             return (None, Sta, p)
 
         # Sta - test statistic -> s
         # if sd of x or sd of y == 0 then x and y are independent
         if (x.std() == 0 or y.std() == 0):
-        # p=1 and Sta=0
+            # p=1 and Sta=0
             out = (1, 0)
             return(out)
 
         # make it explicit as maxData
-        r = x.shape[0]
-        if (r > 500):
-            r1 = 500
+        if (r >  x.shape[0]):
+            r1 =  x.shape[0]
         else:
             r1 = r
-
         # Normalize = making it as mean =0 and std= 1
         x = self.normalizeMat(x).T
         y = self.normalizeMat(y).T
-        z = self.normalizeMat(z).T
-
+        if(d == 1):
+            z = self.normalizeMat(z).T
+        else:
+            z = self.normalizeMat(z)
         (four_z, w, b) = self.random_fourier_features(
             z[:, :d], num_f=num_f, sigma=np.median(self.dist(z[:r1, ])), seed=seed)
 
@@ -233,7 +234,6 @@ class RCOT:
 
         (four_y, w, b) = self.random_fourier_features(
             y, num_f=num_f2, sigma=np.median(self.dist(y[:r1, ])), seed=seed)
-
         f_x = self.normalizeMat(four_x)
         f_y = self.normalizeMat(four_y)  # n,numf2
         f_z = self.normalizeMat(four_z)  # n,numf
@@ -242,10 +242,10 @@ class RCOT:
         Cxy = np.cov(f_x, f_y, rowvar=False)  # 2*numf2,2*numf2
 
         Cxy = Cxy[:num_f2, num_f2:]  # num_f2,num_f2
-    
+
         Cxy = np.round(Cxy, decimals=7)
 
-        Czz = np.cov(f_z,rowvar=False)  # numf,numf
+        Czz = np.cov(f_z, rowvar=False)  # numf,numf
 
         # Czz = np.round(Czz, decimals=7)
 
@@ -277,29 +277,40 @@ class RCOT:
 
         Sta = r * np.sum(Cxy_z**2)
 
-        d = self.expandgrid(np.arange(0,f_x.shape[1]), np.arange(0,f_y.shape[1]))
-        res = np.array(res_x[:,np.array(d['Var1'])]) * np.array(res_y[:,np.array(d['Var2'])])
+        d = self.expandgrid(
+            np.arange(0, f_x.shape[1]), np.arange(0, f_y.shape[1]))
+        res = np.array(res_x[:, np.array(d['Var1'])]) * \
+            np.array(res_y[:, np.array(d['Var2'])])
         res = np.matrix(res)
         Cov = 1/r * ((res.T) @ res)
 
-        w,v = np.linalg.eigh(Cov)
-        w = [i for i in w if i>0]
+        w, v = np.linalg.eigh(Cov)
+        w = [i for i in w if i > 0]
 
         if(self.approx == "lpd4"):
             # from lpb4 import lpb4
             w1 = w
             p = 1 - lpb4(np.array(w1), Sta)
-            if(p==None or np.isnan(p)):
+            if(p == None or np.isnan(p)):
                 from hbe import hbe
                 p = 1 - hbe(w1, Sta)
-        
+        return (Cxy_z, Sta, p)
+    
+    def independence(self, x, y, z=None, num_f=25, num_f2=5, seed=None,r=500):
+        (Cxy,Sta,p) = self.rcot(x, y, z, num_f, num_f2, seed,r)
+        dependence =  max(0, (.5 + (self.alpha-p)/(self.alpha*2)), (.5 - (p-self.alpha)/(2*(1-self.alpha))))
+        return (1-dependence)
 
-        return (Cxy_z, Sta,p)
+    def dependence(self, x, y, z=None, num_f=25, num_f2=5, seed=None,r=500):
+        independence = self.independence(x, y, z, num_f, num_f2, seed,r)
+        return 1-independence
 
-
-# data = read_csv("./M2.csv")
-# x = data['X']
-# z = data['Z']
-# y = data['Y']
-# rs = RCOT(x,y,z)
-# (Cxy_z, Sta,p) = rs.independence(x, y, z)
+# main = time.time()
+# from pandas import read_csv
+# data = read_csv("./indCalibrationDat.csv")
+# x = list(data['A'])
+# z = list(data['B'])
+# y = list(data['C'])
+# rs = RCOT(x, y, z)
+# (Cxy_z, Sta, p) = rs.independence(x, y, z)
+# print("Time for whole:", time.time()-main)
