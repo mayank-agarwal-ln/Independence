@@ -79,7 +79,7 @@ def testRCOT(ps, x, y, Z=[], num_f=25, num_f2=5,r=500):
 def test(ps, X, Y, Z=[], method=None, power=1, num_f=25,num_f2=5,r =500):
     # Valid values for method are: None(default), 'prob', 'fcit', 'sdcit'
     if method is None:
-        method = 'prob'
+        method = 'rcot'
     if method == 'fcit':
         p_val = testFCIT(ps, X, Y, Z)
     elif method == 'sdcit':

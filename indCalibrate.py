@@ -72,7 +72,7 @@ condTestVal = 0
 delta = .1
 
 num_f = 25
-num_f2 =5
+num_f2 =8
 r = 500
 
 

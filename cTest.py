@@ -63,7 +63,9 @@ print('Total Warnings = ', len(warnings))
 print()
 print('Error Details = ', errors)
 print()
-print('Warning Details = ', warnings)
+print('Warning Details = ')
+for i in warnings:
+    print(i)
 print()
 
 end = time.time()

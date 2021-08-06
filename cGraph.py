@@ -47,8 +47,6 @@ class cGraph:
         for var in self.data.keys():
             iData[var] = standardize(self.data[var])
         self.iProb = Prob.ProbSpace(iData)
-
-        rs = RCOT(X, Y, Z)
         #self.iProb = RCoT.RCoT(iData)
         self.bdCache = {}
         self.fdCache = {}

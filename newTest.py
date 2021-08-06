@@ -77,8 +77,6 @@ cumIndep = 0.0
 cumDep = 0.0
 
 # TODO: Num_f2 not working for >6 
-# TODO: Reuslts
-# TODO: Wedenesday cTest.py
 # TODO: Reduce time
 
 numfs = [15,17,20,22,25,28,30,32,35]

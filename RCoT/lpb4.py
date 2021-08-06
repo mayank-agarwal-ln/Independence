@@ -1,4 +1,5 @@
 import numpy as np
+import scipy as sc
 from math import comb
 from RCoT.utils import *
 
@@ -71,17 +72,18 @@ def lpb4(coeff, x):
 
     # step 0: decide on parameters for distribution and support points p specified to be 4 for this version of the function
     p = 4
-
+    #print("coeff", coeff)
+    #print("x",x)
     # step 1: Determine/compute the moments m_1(H), ... m_2p(H)
     moment_vec = get_weighted_sum_of_chi_squared_moments(coeff, p)
-    # print("moment_vec: ", moment_vec)
+    #print("moment_vec: ", type(moment_vec[0]))
 
     lambdatilde_1 = get_lambdatilde_1(moment_vec[0], moment_vec[1])
     # print("lambdatilde_1 ",lambdatilde_1 )
 
     bisect_tol = 1e-9
     lambdatilde_p = get_lambdatilde_p(lambdatilde_1, p, moment_vec, bisect_tol)
-    # print("lambdatilde_p ",lambdatilde_p )
+    #print("lambdatilde_p ",lambdatilde_p )
 
     M_p = deltaNmat_applied(lambdatilde_p, moment_vec, p)
     # print("M_p ",M_p )
@@ -92,6 +94,7 @@ def lpb4(coeff, x):
     roots = np.polynomial.polynomial.polyroots(mu_poly_coeff_vec)
     # print("polyroots: ",roots)
     mu_roots = np.float64(Re(np.complex128(roots)))
+    #print("mu_roots", mu_roots)
     # print("mu_roots",mu_roots)
 
     pi_vec = generate_and_solve_VDM_system(np.array(M_p), mu_roots)
@@ -106,7 +109,9 @@ def lpb4(coeff, x):
 def get_weighted_sum_of_chi_squared_moments(coeffvec, p):
     # Checked - giving correct
     cumulant_vec = get_cumulant_vec_vectorised(coeffvec, p)
+    #print("moment_vec: ", type(cumulant_vec[0]))
     moment_vec = get_moments_from_cumulants(cumulant_vec)
+    #print("moment_vec: ", type(moment_vec[0]))
     return (moment_vec)
 
 def get_cumulant_vec_vectorised(coeffvec, p):
@@ -215,7 +220,7 @@ def get_ith_coeff_of_Stilde_poly(i, mat):
 def generate_and_solve_VDM_system(M_p, mu_roots):
     b_vec = get_VDM_b_vec(M_p)
     VDM = generate_van_der_monde(mu_roots)
-    pi_vec = np.linalg.solve(VDM, b_vec)
+    pi_vec = sc.linalg.solve(VDM, b_vec)
     return pi_vec
 
 #simply takes the last column, and removes last element of last column
@@ -228,6 +233,7 @@ def get_VDM_b_vec(mat):
 #generates the van der monde matrix from a vector
 def generate_van_der_monde(vec):
     p = len(vec)
+    print("p", p)
     vdm = np.zeros((p,p))
     for i in range(p):
         vdm[i,:] = (vec**i)
