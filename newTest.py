@@ -76,12 +76,9 @@ minDep = 9999999.0
 cumIndep = 0.0
 cumDep = 0.0
 
-# TODO: Num_f2 not working for >6 
-# TODO: Reduce time
-
-numfs = [15,17,20,22,25,28,30,32,35]
+numfs = [22,25,28,30,32,35]
 numf2s = [2,3,5,6]
-rs = [500,600,750, 800,950]
+rs = [500,600,750,800]
 
 
 for num_f in numfs:
@@ -89,7 +86,7 @@ for num_f in numfs:
         for r in rs:
             ind_d = {}
             dep_d = {}
-            for i in range(50):
+            for i in range(25):
                 for ind in indeps:
                     if len(ind) == 2:
                         x, y = ind
@@ -103,9 +100,9 @@ for num_f in numfs:
                         minIndep = pval
                     key = str(ind)
                     if(key in ind_d):
-                        ind_d[key].append(pval)
+                        ind_d[key].append(1-pval)
                     else:
-                        ind_d[key] = [pval]
+                        ind_d[key] = [1-pval]
                 for dep in deps:
                     if len(dep) == 2:
                         x, y = dep
@@ -121,9 +118,9 @@ for num_f in numfs:
                         minDep = pval
                     key = str(dep)
                     if(key in dep_d):
-                        dep_d[key].append(pval)
+                        dep_d[key].append(1-pval)
                     else:
-                        dep_d[key] = [pval]
+                        dep_d[key] = [1-pval]
             print("num_f: ",num_f," num_f2: ",num_f2," r: ",r)
             print()
             print("Independents")
